@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "node scripts/hooks/after-edit.mjs" }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm run --silent check >/dev/null 2>&1 || (echo 'npm run check fails: fix it before finishing' >&2; exit 2)"
+          }
+        ]
+      }
+    ]
+  }
+}
