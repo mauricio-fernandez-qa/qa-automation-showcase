@@ -21,6 +21,10 @@ export interface Address {
   state: string;
 }
 
+/**
+ * Country, postal code and house number drive the postcode lookup; street, city and state are only a fallback for
+ * when the lookup is unavailable (`CheckoutPage.submitAddress` keeps whatever the lookup fills in).
+ */
 export const ADDRESS: Address = {
   country: 'Austria',
   postalCode: '1010',

@@ -8,6 +8,7 @@ export const ENDPOINTS = {
   invoices: '/invoices',
   products: '/products',
   productSearch: '/products/search',
+  postcodeLookup: '/postcode-lookup',
   product: (id: string) => `/products/${id}`,
 };
 

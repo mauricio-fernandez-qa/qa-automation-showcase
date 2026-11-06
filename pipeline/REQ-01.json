@@ -37,7 +37,7 @@
       "key": "bugs",
       "name": "Bug investigation",
       "status": "done",
-      "evidence": "No app bugs. 2 test timing issues found and fixed: the address pre-fill and the postcode lookup overwrote typed values (invoice 422)"
+      "evidence": "No app bugs. 3 test issues found and fixed: the profile pre-fill and the postcode lookups (several, not cancelled) overwrote typed values, and the test typed over the city/state the lookup fills in, which the backend rejects by design (AddressMatchesCountry, HTTP 422)"
     },
     {
       "key": "signoff",
