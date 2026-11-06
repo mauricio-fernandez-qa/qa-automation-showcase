@@ -41,7 +41,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: cp .env.example .env
-      - run: npx playwright test
+      - run: npx playwright test --grep-invert @blocked-in-ci
       - uses: actions/upload-pages-artifact@v3
         if: ${{ !cancelled() }}
         with:

@@ -22,6 +22,10 @@ test automation practice: catalog, cart, checkout with several payment methods, 
 
 19 test cases, all automated. Design and priorities in [docs/test-cases.md](docs/test-cases.md).
 
+> **Note:** the demo site sits behind Cloudflare, which shows a bot check to GitHub runners on the "My account" page.
+> That one test (TC-AUTH-01, tagged `@blocked-in-ci`) runs locally only. Sign-in is still covered in CI, because every
+> checkout test signs in.
+
 ## How it is built
 
 ```
