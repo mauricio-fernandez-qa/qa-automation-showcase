@@ -42,10 +42,13 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: cp .env.example .env
       - run: npx playwright test --grep-invert @blocked-in-ci
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          path: playwright-report
+          name: test-results
+          path: |
+            results/results.json
+            playwright-report/
 
   performance:
     name: Performance (k6)
@@ -54,12 +57,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: grafana/setup-k6-action@v1
-      - run: k6 run perf/products-load.js
+      - run: mkdir -p results && k6 run --summary-export=results/k6-summary.json perf/products-load.js
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: k6-summary
+          path: results/k6-summary.json
 
-  publish-report:
-    name: Publish report to GitHub Pages
-    needs: tests
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+  dashboard:
+    name: Build QA dashboard
+    needs: [tests, performance]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/download-artifact@v4
+        with:
+          name: test-results
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: k6-summary
+          path: results
+      - run: node scripts/dashboard/build.mjs
+        env:
+          HISTORY_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GIT_SHA: ${{ github.sha }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publish:
+    name: Publish dashboard to GitHub Pages
+    needs: dashboard
+    if: ${{ !cancelled() && needs.dashboard.result == 'success' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       pages: write

@@ -1,0 +1,49 @@
+{
+  "id": "REQ-01",
+  "title": "Checkout and payment",
+  "requirement": "docs/requirements/REQ-01-checkout-payment.md",
+  "steps": [
+    {
+      "key": "analysis",
+      "name": "Requirement analysis",
+      "status": "done",
+      "evidence": "Acceptance criteria and risk written down"
+    },
+    {
+      "key": "design",
+      "name": "Test design (ISTQB)",
+      "status": "done",
+      "evidence": "Cases with technique and priority in docs/test-cases.md"
+    },
+    {
+      "key": "automation",
+      "name": "Automation",
+      "status": "done",
+      "evidence": "Page objects + specs, written with AI assistance (Claude Code)"
+    },
+    {
+      "key": "review",
+      "name": "Rules review",
+      "status": "done",
+      "evidence": "rules-reviewer agent, 2 rounds: 3 High + 6 Medium findings fixed"
+    },
+    {
+      "key": "execution",
+      "name": "Execution",
+      "status": "done",
+      "evidence": "Runs in CI on every push; live result on the dashboard"
+    },
+    {
+      "key": "bugs",
+      "name": "Bug investigation",
+      "status": "done",
+      "evidence": "No app bugs. 2 test timing issues found and fixed: the address pre-fill and the postcode lookup overwrote typed values (invoice 422)"
+    },
+    {
+      "key": "signoff",
+      "name": "Human sign-off",
+      "status": "pending",
+      "evidence": "Waiting for QA sign-off"
+    }
+  ]
+}

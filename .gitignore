@@ -6,3 +6,5 @@ blob-report/
 playwright/.cache/
 perf/results/
 .DS_Store
+results/
+site/

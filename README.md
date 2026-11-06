@@ -7,7 +7,8 @@
 End-to-end, API and performance tests for an online store, plus the **AI-assisted QA workflow** I use at work:
 Claude Code agents that automate, review and investigate, with hooks that block any change that breaks the team's rules.
 
-**Live test report:** https://mauricio-fernandez-qa.github.io/qa-automation-showcase/
+**Live QA dashboard:** https://mauricio-fernandez-qa.github.io/qa-automation-showcase/ (run history, flaky tests,
+requirement coverage and the QA pipeline board) · [full Playwright report](https://mauricio-fernandez-qa.github.io/qa-automation-showcase/report/)
 
 The app under test is [Practice Software Testing](https://practicesoftwaretesting.com), a public demo store built for
 test automation practice: catalog, cart, checkout with several payment methods, and a REST API.
@@ -40,7 +41,9 @@ tests/
   api/        API tests
 perf/         k6 load test
 scripts/      Convention checker + Claude Code hook
-.claude/      AI agents and hooks
+.claude/      AI agents, the /qa-pipeline command and hooks
+pipeline/     QA pipeline state per requirement (read by the dashboard)
+docs/         Requirements and the test case catalog
 ```
 
 - **Risk first**: checkout and payment get the most cases, because that is where a bug costs money.
@@ -53,13 +56,16 @@ scripts/      Convention checker + Claude Code hook
 The repo is maintained with [Claude Code](https://claude.com/claude-code). The point is not "AI writes tests", it is
 **AI works inside the same rules a senior reviewer would enforce**:
 
-| Piece                                                    | Role                                                                                       |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| [`test-automator`](.claude/agents/test-automator.md)     | Explores the real app, writes the page object and the test, runs it twice                  |
-| [`rules-reviewer`](.claude/agents/rules-reviewer.md)     | Reviews every change against [CONVENTIONS.md](CONVENTIONS.md), by severity                 |
-| [`bug-investigator`](.claude/agents/bug-investigator.md) | Takes a failure to its root cause and drafts the bug report with evidence                  |
-| [Hooks](.claude/settings.json)                           | After every edit, lint + conventions run on the file; a session cannot end with violations |
-| [CLAUDE.md](CLAUDE.md)                                   | The rules: explore before automating, never change an expected result to make a test pass  |
+| Piece                                                    | Role                                                                                                                                                          |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`test-automator`](.claude/agents/test-automator.md)     | Explores the real app, writes the page object and the test, runs it twice                                                                                     |
+| [`rules-reviewer`](.claude/agents/rules-reviewer.md)     | Reviews every change against [CONVENTIONS.md](CONVENTIONS.md), by severity                                                                                    |
+| [`bug-investigator`](.claude/agents/bug-investigator.md) | Takes a failure to its root cause and drafts the bug report with evidence                                                                                     |
+| [Hooks](.claude/settings.json)                           | After every edit, lint + conventions run on the file; a session cannot end with violations                                                                    |
+| [CLAUDE.md](CLAUDE.md)                                   | The rules: explore before automating, never change an expected result to make a test pass                                                                     |
+| [`/qa-pipeline REQ-NN`](.claude/commands/qa-pipeline.md) | Orchestrates the agents step by step: analysis → test design → automation → review → execution → bugs → human sign-off, with an approval gate after each step |
+| [`test-designer`](.claude/agents/test-designer.md)       | Designs ISTQB test cases for a requirement before any code is written                                                                                         |
+| [QA dashboard](scripts/dashboard/)                       | Built in CI from the Playwright and k6 results; shows run history, flaky tests and each requirement in the pipeline                                           |
 
 Every result still goes through a human review before it is merged.
 
@@ -75,6 +81,7 @@ npm run test:e2e      # E2E only
 npm run test:api      # API only
 npm run report        # open the HTML report
 npm run check         # quality gate
+npm run dashboard     # build the QA dashboard locally (site/index.html)
 k6 run perf/products-load.js
 ```
 

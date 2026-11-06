@@ -20,3 +20,7 @@ This repo is maintained with Claude Code. These rules apply to every agent and e
 | `test-automator`   | Turns a test case into a test: explores the app, writes POM + spec, runs it twice        |
 | `rules-reviewer`   | Reviews new tests against `CONVENTIONS.md` and reports what to fix (read-only)           |
 | `bug-investigator` | Takes a failing test to a root cause and drafts the bug report with evidence (read-only) |
+| `test-designer`    | Designs ISTQB test cases for a requirement and writes them to `docs/test-cases.md`       |
+
+The `/qa-pipeline REQ-NN` command runs them in order, with a human approval after each step and a human sign-off
+at the end (`.claude/commands/qa-pipeline.md`). Pipeline state lives in `pipeline/*.json`.

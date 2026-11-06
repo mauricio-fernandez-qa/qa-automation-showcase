@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QA Dashboard</title>
+    <style>
+      :root {
+        --surface-0: #f4f4f1;
+        --surface-1: #fcfcfb;
+        --border: #e1e0d9;
+        --text-primary: #0b0b0b;
+        --text-secondary: #52514e;
+        --text-muted: #77766f;
+        --good: #0ca30c;
+        --warning: #fab219;
+        --critical: #d03b3b;
+        --good-text: #006300;
+        --accent: #2563c9;
+        --track: #ecebe6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --surface-0: #121211;
+          --surface-1: #1a1a19;
+          --border: #2c2c2a;
+          --text-primary: #f0efec;
+          --text-secondary: #c3c2b7;
+          --text-muted: #9a998f;
+          --good-text: #0ca30c;
+          --accent: #7aa7f0;
+          --track: #262624;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--surface-0);
+        color: var(--text-primary);
+        font:
+          15px/1.5 system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: end;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      h1 {
+        font-size: 24px;
+        margin: 0;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      .sub {
+        color: var(--text-secondary);
+        margin: 4px 0 0;
+      }
+      a {
+        color: var(--accent);
+      }
+      .links a {
+        margin-left: 14px;
+        font-weight: 600;
+      }
+      .card {
+        background: var(--surface-1);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .tile {
+        margin: 0;
+      }
+      .tile .label {
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .tile .value {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+      .tile .note {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .chart {
+        position: relative;
+      }
+      .chart svg {
+        width: 100%;
+        height: 220px;
+        display: block;
+      }
+      .tooltip {
+        position: absolute;
+        pointer-events: none;
+        background: var(--surface-1);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+        white-space: nowrap;
+        display: none;
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th {
+        text-align: left;
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border);
+        padding: 8px 10px;
+      }
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 8px 10px;
+        vertical-align: top;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex: none;
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .board td {
+        white-space: nowrap;
+      }
+      .board td.findings {
+        white-space: normal;
+        min-width: 200px;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .nowrap {
+        white-space: nowrap;
+      }
+      .board .evidence {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 2px;
+        white-space: normal;
+      }
+      details summary {
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      footer {
+        color: var(--text-muted);
+        font-size: 13px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>QA Dashboard</h1>
+          <p class="sub">Playwright E2E + API and k6 results from CI, and the QA pipeline per requirement.</p>
+        </div>
+        <nav class="links">
+          <a href="report/">Full test report</a>
+          <a href="https://github.com/mauricio-fernandez-qa/qa-automation-showcase">Repository</a>
+        </nav>
+      </header>
+
+      <section class="tiles" id="tiles"></section>
+
+      <section class="card">
+        <h2>Results per run</h2>
+        <div class="legend" id="legend"></div>
+        <div class="chart" id="chart"><div class="tooltip" id="tooltip"></div></div>
+        <details>
+          <summary>Show as table</summary>
+          <div class="scroll"><table id="runs"></table></div>
+        </details>
+      </section>
+
+      <section class="card">
+        <h2>QA pipeline by requirement</h2>
+        <p class="sub" style="margin: -6px 0 12px">
+          Each step needs evidence (hover a step to see it); the last one is always a human sign-off.
+          <a
+            href="https://github.com/mauricio-fernandez-qa/qa-automation-showcase/blob/main/.claude/commands/qa-pipeline.md"
+            >How the pipeline works</a
+          >
+        </p>
+        <div class="scroll"><table class="board" id="board"></table></div>
+      </section>
+
+      <section class="card">
+        <h2>Test cases: last result and stability</h2>
+        <div class="scroll"><table id="tests"></table></div>
+      </section>
+
+      <footer id="footer"></footer>
+    </main>
+
+    <script>
+      const DATA = /*__DATA__*/ null;
+      const STATUS = {
+        expected: { label: 'Passed', color: 'var(--good)', icon: '✓' },
+        flaky: { label: 'Flaky', color: 'var(--warning)', icon: '◐' },
+        unexpected: { label: 'Failed', color: 'var(--critical)', icon: '✕' },
+        skipped: { label: 'Skipped', color: 'var(--text-muted)', icon: '–' },
+      };
+      const STEP = {
+        done: { label: 'Done', color: 'var(--good)', icon: '✓' },
+        pending: { label: 'Pending', color: 'var(--text-muted)', icon: '◷' },
+        blocked: { label: 'Blocked', color: 'var(--critical)', icon: '✕' },
+        na: { label: 'N/A', color: 'var(--border)', icon: '–' },
+      };
+      const RECENT_RUNS = 10;
+      const esc = (s) =>
+        String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+      const chip = (s) =>
+        `<span class="chip"><span class="dot" style="background:${s.color}"></span>${s.icon} ${s.label}</span>`;
+      const fmtDate = (d) =>
+        new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+      const secs = (ms) => `${(ms / 1000).toFixed(1)} s`;
+
+      const runs = DATA.history;
+      const last = runs[runs.length - 1];
+      const executed = (r) => r.passed + r.failed + r.flaky;
+      const recent = runs.slice(-RECENT_RUNS);
+
+      // Tiles
+      const passRate = executed(last) ? Math.round((last.passed / executed(last)) * 100) : 0;
+      const flakyIds = new Set(recent.flatMap((r) => r.tests.filter((t) => t.status === 'flaky').map((t) => t.id)));
+      const perf = [...runs].reverse().find((r) => r.perf?.p95Ms != null)?.perf;
+      document.getElementById('tiles').innerHTML = [
+        [
+          'Pass rate, last run',
+          `${passRate}%`,
+          `${last.passed} of ${executed(last)} passed${last.skipped ? ` · ${last.skipped} skipped` : ''}`,
+        ],
+        ['Runs tracked', runs.length, `last on ${fmtDate(last.date)}`],
+        ['Flaky tests', flakyIds.size, `in the last ${plural(recent.length, 'run')}`],
+        [
+          'API p95 under load',
+          perf ? `${Math.round(perf.p95Ms)} ms` : '—',
+          perf ? `k6 · ${(perf.errorRate * 100).toFixed(2)}% errors · target < 1500 ms` : 'no k6 data yet',
+        ],
+      ]
+        .map(
+          ([l, v, n]) =>
+            `<div class="card tile"><div class="label">${l}</div><div class="value">${v}</div><div class="note">${n}</div></div>`,
+        )
+        .join('');
+
+      // Stacked bars per run: passed at the baseline, then flaky, then failed
+      const SERIES = ['passed', 'flaky', 'failed'];
+      const SERIES_STATUS = { passed: STATUS.expected, flaky: STATUS.flaky, failed: STATUS.unexpected };
+      document.getElementById('legend').innerHTML = SERIES.map(
+        (k) =>
+          `<span><span class="swatch" style="background:${SERIES_STATUS[k].color}"></span>${SERIES_STATUS[k].icon} ${SERIES_STATUS[k].label}</span>`,
+      ).join('');
+      const W = 1000,
+        H = 220,
+        PAD_L = 36,
+        PAD_B = 22,
+        PAD_T = 8,
+        GAP = 2,
+        R = 4;
+      const max = Math.max(...runs.map(executed), 1);
+      const slot = (W - PAD_L) / Math.max(runs.length, 1);
+      const barW = Math.min(36, slot * 0.6);
+      const y = (v) => H - PAD_B - (v / max) * (H - PAD_B - PAD_T);
+      const topRounded = (x, y0, w, h, r) => {
+        const rr = Math.min(r, h, w / 2);
+        return `M${x},${y0 + h}V${y0 + rr}Q${x},${y0} ${x + rr},${y0}H${x + w - rr}Q${x + w},${y0} ${x + w},${y0 + rr}V${y0 + h}Z`;
+      };
+      let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Passed, flaky and failed tests per CI run">`;
+      for (const t of [0, Math.round(max / 2), max]) {
+        svg += `<line x1="${PAD_L}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--border)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+        svg += `<text x="${PAD_L - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)">${t}</text>`;
+      }
+      runs.forEach((r, i) => {
+        const x = PAD_L + i * slot + (slot - barW) / 2;
+        let base = 0;
+        const present = SERIES.filter((k) => r[k] > 0);
+        present.forEach((k, j) => {
+          const y0 = y(base + r[k]);
+          const h = y(base) - y0 - (j > 0 ? GAP : 0);
+          const isTop = j === present.length - 1;
+          const d = isTop
+            ? topRounded(x, y0, barW, Math.max(h, 1), R)
+            : `M${x},${y0}h${barW}v${Math.max(h, 1)}h${-barW}Z`;
+          svg += `<path d="${d}" fill="${SERIES_STATUS[k].color}"/>`;
+          base += r[k];
+        });
+        svg += `<rect class="hit" data-i="${i}" x="${PAD_L + i * slot}" y="0" width="${slot}" height="${H - PAD_B}" fill="transparent"/>`;
+      });
+      const labelEvery = Math.ceil(runs.length / 8);
+      runs.forEach((r, i) => {
+        if (i % labelEvery === 0 || i === runs.length - 1)
+          svg += `<text x="${PAD_L + i * slot + slot / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--text-muted)">${new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</text>`;
+      });
+      svg += '</svg>';
+      const chart = document.getElementById('chart');
+      chart.insertAdjacentHTML('afterbegin', svg);
+      const tip = document.getElementById('tooltip');
+      chart.querySelectorAll('.hit').forEach((el) => {
+        el.addEventListener('mousemove', (e) => {
+          const r = runs[+el.dataset.i];
+          tip.innerHTML = `<strong>${fmtDate(r.date)}</strong> · ${esc(r.sha)}<br>${chip(STATUS.expected)} ${r.passed}<br>${chip(STATUS.flaky)} ${r.flaky}<br>${chip(STATUS.unexpected)} ${r.failed}<br><span class="muted">${secs(r.durationMs)}</span>`;
+          tip.style.display = 'block';
+          const box = chart.getBoundingClientRect();
+          const left = Math.min(e.clientX - box.left + 12, box.width - tip.offsetWidth - 4);
+          tip.style.left = `${Math.max(left, 0)}px`;
+          tip.style.top = `${e.clientY - box.top - tip.offsetHeight - 8}px`;
+        });
+        el.addEventListener('mouseleave', () => (tip.style.display = 'none'));
+      });
+      document.getElementById('runs').innerHTML =
+        '<tr><th>Run</th><th>Commit</th><th class="num">Passed</th><th class="num">Flaky</th><th class="num">Failed</th><th class="num">Duration</th></tr>' +
+        [...runs]
+          .reverse()
+          .map(
+            (r) =>
+              `<tr><td>${r.url ? `<a href="${esc(r.url)}">${fmtDate(r.date)}</a>` : fmtDate(r.date)}</td><td>${esc(r.sha)}</td><td class="num">${r.passed}</td><td class="num">${r.flaky}</td><td class="num">${r.failed}</td><td class="num">${secs(r.durationMs)}</td></tr>`,
+          )
+          .join('');
+
+      // Pipeline board, with each requirement's tests from the last run
+      const catalog = DATA.catalog;
+      const lastById = Object.fromEntries(last.tests.map((t) => [t.id, t]));
+      const steps = DATA.pipelines[0]?.steps ?? [];
+      document.getElementById('board').innerHTML =
+        `<tr><th>Requirement</th><th>Tests, last run</th>${steps.map((s) => `<th>${esc(s.name)}</th>`).join('')}<th>Findings</th></tr>` +
+        DATA.pipelines
+          .map((p) => {
+            const ids = Object.keys(catalog).filter((id) => catalog[id].req === p.id);
+            const ran = ids.map((id) => lastById[id]).filter((t) => t && t.status !== 'skipped');
+            const ok = ran.filter((t) => t.status === 'expected').length;
+            const cov = `${ok}/${ids.length} passed${ran.length < ids.length ? `<div class="evidence">${ids.length - ran.length} not run in CI</div>` : ''}`;
+            const link = `https://github.com/mauricio-fernandez-qa/qa-automation-showcase/blob/main/${p.requirement}`;
+            return `<tr><td><a href="${link}"><strong>${esc(p.id)}</strong></a><div class="evidence">${esc(p.title)}</div></td><td>${cov}</td>${p.steps
+              .map((s) => `<td title="${esc(s.evidence)}">${chip(STEP[s.status] ?? STEP.pending)}</td>`)
+              .join('')}<td class="findings">${esc(p.steps.find((s) => s.key === 'bugs')?.evidence)}</td></tr>`;
+          })
+          .join('');
+
+      // Test table with stability over the recent runs
+      const statusOf = (id) => lastById[id]?.status ?? 'skipped';
+      const history = (id) => recent.map((r) => r.tests.find((t) => t.id === id)?.status).filter(Boolean);
+      document.getElementById('tests').innerHTML =
+        '<tr><th>ID</th><th>Req</th><th>Test case</th><th>Priority</th><th>Last result</th><th>Stability</th><th class="num">Duration</th></tr>' +
+        Object.entries(catalog)
+          .map(([id, c]) => {
+            const h = history(id);
+            const unstable = h.filter((s) => s !== 'expected' && s !== 'skipped').length;
+            const stability = h.length
+              ? unstable
+                ? `<span class="chip">${unstable} of ${h.length} runs not clean</span>`
+                : `<span class="muted nowrap">clean in ${plural(h.length, 'run')}</span>`
+              : '<span class="muted">—</span>';
+            return `<tr><td class="nowrap"><strong>${esc(id)}</strong></td><td class="nowrap">${esc(c.req)}</td><td>${esc(c.title)}</td><td>${esc(c.priority)}</td><td>${chip(STATUS[statusOf(id)])}</td><td>${stability}</td><td class="num">${lastById[id] ? secs(lastById[id].durationMs) : '—'}</td></tr>`;
+          })
+          .join('');
+
+      document.getElementById('footer').textContent =
+        `Generated ${fmtDate(DATA.generatedAt)} · last commit ${last.sha}`;
+    </script>
+  </body>
+</html>

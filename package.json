@@ -16,7 +16,8 @@
     "format:check": "prettier --check .",
     "conventions": "node scripts/check-conventions.mjs",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run conventions",
-    "perf": "k6 run perf/products-load.js"
+    "perf": "k6 run --summary-export=results/k6-summary.json perf/products-load.js",
+    "dashboard": "node scripts/dashboard/build.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

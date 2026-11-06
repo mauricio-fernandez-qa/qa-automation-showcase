@@ -10,7 +10,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    isCI ? ['github'] : ['list'],
+    ['html', { open: 'never' }],
+    ['json', { outputFile: 'results/results.json' }], // read by the dashboard
+  ],
   use: {
     testIdAttribute: 'data-test',
     trace: 'on-first-retry',
